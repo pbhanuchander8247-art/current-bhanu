@@ -1,0 +1,258 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedUser() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isOwner(userId) {
+      return isVerifiedUser() && request.auth.uid == userId;
+    }
+
+    function isValidPupilProfile(data) {
+      return data.keys().hasAll([
+          'uid',
+          'pupilName',
+          'educationLevel',
+          'preferredLang',
+          'preferredTheme',
+          'refreshIntervalSec',
+          'otpVerified',
+          'createdAt',
+          'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'uid',
+          'pupilName',
+          'educationLevel',
+          'preferredLang',
+          'preferredTheme',
+          'refreshIntervalSec',
+          'otpVerified',
+          'createdAt',
+          'updatedAt'
+        ])
+        && isValidId(data.uid)
+        && data.uid == request.auth.uid
+        && data.pupilName is string
+        && data.pupilName.size() >= 2
+        && data.pupilName.size() <= 80
+        && data.educationLevel in [
+          'high_school',
+          'intermediate',
+          'undergraduate',
+          'postgraduate',
+          'competitive_aspirant'
+        ]
+        && data.preferredLang in ['en', 'te', 'bilingual']
+        && data.preferredTheme in ['light', 'dark']
+        && data.refreshIntervalSec is int
+        && data.refreshIntervalSec in [0, 30, 120, 300]
+        && data.otpVerified is bool
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidPupilContact(data) {
+      return data.keys().hasAll(['uid', 'email', 'otpVerifiedAt', 'updatedAt'])
+        && data.keys().hasOnly(['uid', 'email', 'otpVerifiedAt', 'updatedAt'])
+        && isValidId(data.uid)
+        && data.uid == request.auth.uid
+        && data.email is string
+        && data.email.size() >= 5
+        && data.email.size() <= 160
+        && data.otpVerifiedAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidMockTestAttempt(data) {
+      return data.keys().hasAll([
+          'uid',
+          'testId',
+          'testTitle',
+          'examTrack',
+          'score',
+          'totalQuestions',
+          'accuracyPct',
+          'durationSec',
+          'status',
+          'createdAt'
+        ])
+        && data.keys().hasOnly([
+          'uid',
+          'testId',
+          'testTitle',
+          'examTrack',
+          'score',
+          'totalQuestions',
+          'accuracyPct',
+          'durationSec',
+          'status',
+          'createdAt'
+        ])
+        && isValidId(data.uid)
+        && data.uid == request.auth.uid
+        && isValidId(data.testId)
+        && data.testId.size() <= 64
+        && data.testTitle is string
+        && data.testTitle.size() >= 2
+        && data.testTitle.size() <= 140
+        && data.examTrack in ['UPSC', 'APPSC_TSPSC', 'SSC_BANKING', 'FOUNDATION']
+        && data.score is int
+        && data.score >= 0
+        && data.score <= 500
+        && data.totalQuestions is int
+        && data.totalQuestions >= 1
+        && data.totalQuestions <= 200
+        && data.accuracyPct is number
+        && data.accuracyPct >= 0
+        && data.accuracyPct <= 100
+        && data.durationSec is int
+        && data.durationSec >= 0
+        && data.durationSec <= 18000
+        && data.status == 'completed'
+        && data.createdAt is timestamp;
+    }
+
+    function isValidSavedArticle(data) {
+      return data.keys().hasAll(['uid', 'articleId', 'titleEn', 'titleTe', 'category', 'createdAt'])
+        && data.keys().hasOnly(['uid', 'articleId', 'titleEn', 'titleTe', 'category', 'createdAt'])
+        && isValidId(data.uid)
+        && data.uid == request.auth.uid
+        && isValidId(data.articleId)
+        && data.articleId.size() <= 64
+        && data.titleEn is string
+        && data.titleEn.size() >= 2
+        && data.titleEn.size() <= 200
+        && data.titleTe is string
+        && data.titleTe.size() >= 2
+        && data.titleTe.size() <= 240
+        && data.category in ['regional', 'national', 'international', 'science', 'economy', 'exams']
+        && data.createdAt is timestamp;
+    }
+
+    function isValidQuizRecord(data) {
+      return data.keys().hasAll(['uid', 'quizId', 'score', 'total', 'status', 'createdAt'])
+        && data.keys().hasOnly(['uid', 'quizId', 'score', 'total', 'status', 'createdAt'])
+        && isValidId(data.uid)
+        && data.uid == request.auth.uid
+        && isValidId(data.quizId)
+        && data.quizId.size() <= 64
+        && data.score is int
+        && data.score >= 0
+        && data.score <= 50
+        && data.total is int
+        && data.total >= 1
+        && data.total <= 50
+        && data.status == 'completed'
+        && data.createdAt is timestamp;
+    }
+
+    function parentUserExists(userId) {
+      return exists(/databases/$(database)/documents/users/$(userId));
+    }
+
+    match /test/connection {
+      allow get: if true;
+    }
+
+    match /users/{userId} {
+      allow get: if isValidId(userId) && isOwner(userId);
+      allow list: if isOwner(userId) && resource.data.uid == request.auth.uid;
+      allow create: if isValidId(userId)
+        && isOwner(userId)
+        && isValidPupilProfile(incoming())
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isValidId(userId)
+        && isOwner(userId)
+        && isValidPupilProfile(incoming())
+        && incoming().uid == existing().uid
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && (
+          incoming().diff(existing()).affectedKeys().hasOnly(['pupilName', 'educationLevel', 'otpVerified', 'updatedAt'])
+          || incoming().diff(existing()).affectedKeys().hasOnly(['preferredLang', 'preferredTheme', 'refreshIntervalSec', 'updatedAt'])
+        );
+      allow delete: if isValidId(userId) && isOwner(userId);
+
+      match /private/contact {
+        allow get: if isValidId(userId) && isOwner(userId);
+        allow create: if isValidId(userId)
+          && isOwner(userId)
+          && parentUserExists(userId)
+          && isValidPupilContact(incoming())
+          && incoming().otpVerifiedAt == request.time
+          && incoming().updatedAt == request.time;
+        allow update: if isValidId(userId)
+          && isOwner(userId)
+          && parentUserExists(userId)
+          && isValidPupilContact(incoming())
+          && incoming().uid == existing().uid
+          && incoming().otpVerifiedAt == existing().otpVerifiedAt
+          && incoming().updatedAt == request.time
+          && incoming().diff(existing()).affectedKeys().hasOnly(['email', 'updatedAt']);
+        allow delete: if isValidId(userId) && isOwner(userId);
+      }
+
+      match /attempts/{attemptId} {
+        allow get: if isValidId(userId) && isValidId(attemptId) && isOwner(userId);
+        allow list: if isOwner(userId) && resource.data.uid == request.auth.uid;
+        allow create: if isValidId(userId)
+          && isValidId(attemptId)
+          && isOwner(userId)
+          && parentUserExists(userId)
+          && isValidMockTestAttempt(incoming())
+          && incoming().createdAt == request.time;
+        allow update: if false;
+        allow delete: if isValidId(userId) && isValidId(attemptId) && isOwner(userId);
+      }
+
+      match /bookmarks/{bookmarkId} {
+        allow get: if isValidId(userId) && isValidId(bookmarkId) && isOwner(userId);
+        allow list: if isOwner(userId) && resource.data.uid == request.auth.uid;
+        allow create: if isValidId(userId)
+          && isValidId(bookmarkId)
+          && isOwner(userId)
+          && parentUserExists(userId)
+          && isValidSavedArticle(incoming())
+          && incoming().createdAt == request.time;
+        allow update: if false;
+        allow delete: if isValidId(userId) && isValidId(bookmarkId) && isOwner(userId);
+      }
+
+      match /quizProgress/{quizId} {
+        allow get: if isValidId(userId) && isValidId(quizId) && isOwner(userId);
+        allow list: if isOwner(userId) && resource.data.uid == request.auth.uid;
+        allow create: if isValidId(userId)
+          && isValidId(quizId)
+          && isOwner(userId)
+          && parentUserExists(userId)
+          && isValidQuizRecord(incoming())
+          && incoming().createdAt == request.time;
+        allow update: if false;
+        allow delete: if isValidId(userId) && isValidId(quizId) && isOwner(userId);
+      }
+    }
+  }
+}

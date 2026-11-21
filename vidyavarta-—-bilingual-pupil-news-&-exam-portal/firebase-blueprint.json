@@ -1,0 +1,255 @@
+{
+  "entities": {
+    "PupilProfile": {
+      "title": "Pupil Profile",
+      "description": "Verified pupil learning profile, education level, and portal preferences.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "Firebase Auth UID of the pupil.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "pupilName": {
+          "type": "string",
+          "description": "Full name of the pupil.",
+          "minLength": 2,
+          "maxLength": 80
+        },
+        "educationLevel": {
+          "type": "string",
+          "description": "Academic or competitive exam preparation stage.",
+          "enum": [
+            "high_school",
+            "intermediate",
+            "undergraduate",
+            "postgraduate",
+            "competitive_aspirant"
+          ]
+        },
+        "preferredLang": {
+          "type": "string",
+          "description": "Preferred portal display language.",
+          "enum": ["en", "te", "bilingual"]
+        },
+        "preferredTheme": {
+          "type": "string",
+          "description": "Preferred UI color theme.",
+          "enum": ["light", "dark"]
+        },
+        "refreshIntervalSec": {
+          "type": "integer",
+          "description": "News auto-refresh interval in seconds (0 for manual)."
+        },
+        "otpVerified": {
+          "type": "boolean",
+          "description": "Whether initial OTP validation completed."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server last update timestamp."
+        }
+      },
+      "required": [
+        "uid",
+        "pupilName",
+        "educationLevel",
+        "preferredLang",
+        "preferredTheme",
+        "refreshIntervalSec",
+        "otpVerified",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "PupilContact": {
+      "title": "Pupil Private Contact",
+      "description": "Isolated PII document storing verified pupil email metadata.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "maxLength": 160
+        },
+        "otpVerifiedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["uid", "email", "otpVerifiedAt", "updatedAt"]
+    },
+    "MockTestAttempt": {
+      "title": "Mock Test Attempt",
+      "description": "Immutable competitive exam mock test submission record.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "testId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "testTitle": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 140
+        },
+        "examTrack": {
+          "type": "string",
+          "enum": ["UPSC", "APPSC_TSPSC", "SSC_BANKING", "FOUNDATION"]
+        },
+        "score": {
+          "type": "integer"
+        },
+        "totalQuestions": {
+          "type": "integer"
+        },
+        "accuracyPct": {
+          "type": "number"
+        },
+        "durationSec": {
+          "type": "integer"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["completed"]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "uid",
+        "testId",
+        "testTitle",
+        "examTrack",
+        "score",
+        "totalQuestions",
+        "accuracyPct",
+        "durationSec",
+        "status",
+        "createdAt"
+      ]
+    },
+    "SavedArticle": {
+      "title": "Saved Article Bookmark",
+      "description": "Bookmarked bilingual news dispatch for revision.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "articleId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "titleEn": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 200
+        },
+        "titleTe": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 240
+        },
+        "category": {
+          "type": "string",
+          "enum": ["regional", "national", "international", "science", "economy", "exams"]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["uid", "articleId", "titleEn", "titleTe", "category", "createdAt"]
+    },
+    "QuizRecord": {
+      "title": "Daily Quiz Record",
+      "description": "Completed quick current affairs quiz score.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "quizId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "score": {
+          "type": "integer"
+        },
+        "total": {
+          "type": "integer"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["completed"]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["uid", "quizId", "score", "total", "status", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/PupilProfile" },
+      "description": "Owner-scoped pupil profile and workspace preferences."
+    },
+    "/users/{userId}/private/contact": {
+      "schema": { "$ref": "#/entities/PupilContact" },
+      "description": "Isolated PII email and OTP verification metadata."
+    },
+    "/users/{userId}/attempts/{attemptId}": {
+      "schema": { "$ref": "#/entities/MockTestAttempt" },
+      "description": "Owner-scoped immutable competitive mock test attempts."
+    },
+    "/users/{userId}/bookmarks/{bookmarkId}": {
+      "schema": { "$ref": "#/entities/SavedArticle" },
+      "description": "Owner-scoped saved news articles."
+    },
+    "/users/{userId}/quizProgress/{quizId}": {
+      "schema": { "$ref": "#/entities/QuizRecord" },
+      "description": "Owner-scoped daily quick quiz results."
+    }
+  }
+}

@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      (function () {
+        try {
+          var own = Object.getOwnPropertyDescriptor(window, 'fetch');
+          var proto = Object.getPrototypeOf(window);
+          var protoDesc = !own && proto ? Object.getOwnPropertyDescriptor(proto, 'fetch') : null;
+          var desc = own || protoDesc;
+          if (desc && desc.get && !desc.set && (!own || own.configurable)) {
+            var baseGet = desc.get;
+            var customFetch = null;
+            Object.defineProperty(window, 'fetch', {
+              configurable: true,
+              enumerable: desc.enumerable !== false,
+              get: function () {
+                return customFetch || baseGet.call(window);
+              },
+              set: function (nextFetch) {
+                if (typeof nextFetch === 'function') {
+                  customFetch = nextFetch;
+                }
+              },
+            });
+          }
+          window.addEventListener(
+            'error',
+            function (event) {
+              if (
+                event &&
+                typeof event.filename === 'string' &&
+                event.filename.indexOf('chrome-extension://') === 0 &&
+                typeof event.message === 'string' &&
+                event.message.indexOf('fetch') !== -1
+              ) {
+                event.preventDefault();
+              }
+            },
+            true
+          );
+        } catch (e) {}
+      })();
+    </script>
+    <title>BCR Current Affairs — Bilingual Pupil News &amp; Exam Portal</title>
+    <meta
+      name="description"
+      content="BCR Current Affairs bilingual (English and Telugu) current affairs, competitive exam mock tests, infographics, and study glossary portal."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+Telugu:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <!-- Pupil Authentication & Single-OTP Verification Gate -->
+    <div id="auth-gate" class="auth-shell">
+      <header class="top-bar">
+        <span class="brand-wordmark" data-i18n="brand">BCR Current Affairs</span>
+        <div class="bar-actions">
+          <div class="segmented" role="group" aria-label="Language mode">
+            <button type="button" class="seg-btn" data-lang="en">English</button>
+            <button type="button" class="seg-btn" data-lang="te">తెలుగు</button>
+            <button type="button" class="seg-btn active" data-lang="bilingual">Dual</button>
+          </div>
+          <button type="button" id="auth-theme-toggle" class="icon-btn" aria-label="Toggle theme">
+            Theme
+          </button>
+        </div>
+      </header>
+
+      <main class="auth-grid">
+        <section class="editorial-card auth-intro">
+          <p class="kicker" data-i18n="kicker">Bilingual Current Affairs &amp; Exam Desk</p>
+          <h1 class="display-title" data-i18n="authHeading">
+            Verified bilingual news, regional intelligence, and mock exams.
+          </h1>
+          <p class="muted-copy" data-i18n="authSub">
+            Sign in with your own email and password, create a new pupil account, or verify once with a one-time passcode. Your study session is strictly scoped to your account.
+          </p>
+          <div class="feature-row">
+            <div>
+              <strong>Regional to Global</strong>
+              <span>AP &amp; TS · National · World</span>
+            </div>
+            <div>
+              <strong>Exam Tracks</strong>
+              <span>UPSC · APPSC · TSPSC · SSC</span>
+            </div>
+            <div>
+              <strong>Study Tools</strong>
+              <span>Mock Tests · Infographics · Glossary</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="editorial-card auth-form-card">
+          <div id="auth-mode-tabs" class="auth-tabs" role="tablist" aria-label="Authentication mode">
+            <button type="button" class="seg-btn active" data-auth-mode="signin">Sign In</button>
+            <button type="button" class="seg-btn" data-auth-mode="register">Create Account</button>
+            <button type="button" class="seg-btn" data-auth-mode="otp">One-Time Code</button>
+          </div>
+
+          <form id="signin-form" class="form-stack">
+            <h2 class="section-title" data-i18n="signInHeading">Sign In with Your Credentials</h2>
+
+            <label class="field-label" for="signin-email" data-i18n="emailLabel">Email Address</label>
+            <input id="signin-email" class="text-input" type="email" required maxlength="160" autocomplete="email" placeholder="you@example.com" />
+
+            <label class="field-label" for="signin-password" data-i18n="passwordLabel">Password</label>
+            <div class="password-wrap">
+              <input id="signin-password" class="text-input" type="password" required minlength="8" maxlength="128" autocomplete="current-password" placeholder="Enter your password" />
+              <button type="button" class="secondary-btn toggle-pw-btn" data-pw-target="signin-password">Show</button>
+            </div>
+
+            <p id="signin-error" class="error-box hidden" role="alert"></p>
+            <button type="submit" id="signin-submit-btn" class="primary-btn">Sign In to Portal</button>
+          </form>
+
+          <form id="register-form" class="form-stack hidden">
+            <h2 class="section-title" data-i18n="registerHeading">Create Pupil Account</h2>
+
+            <label class="field-label" for="reg-name" data-i18n="pupilNameLabel">Pupil Name</label>
+            <input id="reg-name" class="text-input" type="text" required minlength="2" maxlength="80" autocomplete="name" placeholder="e.g., Kiran Kumar" />
+
+            <label class="field-label" for="reg-level" data-i18n="eduLevelLabel">Education Level</label>
+            <select id="reg-level" class="text-input">
+              <option value="high_school">High School (Classes 9–10)</option>
+              <option value="intermediate">Intermediate (Classes 11–12)</option>
+              <option value="undergraduate">Undergraduate / Degree</option>
+              <option value="postgraduate">Postgraduate / Research</option>
+              <option value="competitive_aspirant" selected>Competitive Exam Aspirant</option>
+            </select>
+
+            <label class="field-label" for="reg-email" data-i18n="emailLabel">Email Address</label>
+            <input id="reg-email" class="text-input" type="email" required maxlength="160" autocomplete="email" placeholder="you@example.com" />
+
+            <label class="field-label" for="reg-password" data-i18n="passwordLabel">Password</label>
+            <div class="password-wrap">
+              <input id="reg-password" class="text-input" type="password" required minlength="8" maxlength="128" autocomplete="new-password" placeholder="At least 8 characters" />
+              <button type="button" class="secondary-btn toggle-pw-btn" data-pw-target="reg-password">Show</button>
+            </div>
+
+            <label class="field-label" for="reg-confirm" data-i18n="confirmPasswordLabel">Confirm Password</label>
+            <input id="reg-confirm" class="text-input" type="password" required minlength="8" maxlength="128" autocomplete="new-password" placeholder="Re-enter your password" />
+
+            <p id="register-error" class="error-box hidden" role="alert"></p>
+            <button type="submit" id="register-submit-btn" class="primary-btn">Create Account &amp; Enter</button>
+          </form>
+
+          <form id="details-form" class="form-stack hidden">
+            <h2 class="section-title" data-i18n="enterDetails">One-Time Passcode Sign-In</h2>
+
+            <label class="field-label" for="pupil-name" data-i18n="pupilNameLabel">Pupil Name</label>
+            <input id="pupil-name" class="text-input" type="text" required minlength="2" maxlength="80" placeholder="e.g., Kiran Kumar" />
+
+            <label class="field-label" for="pupil-level" data-i18n="eduLevelLabel">Education Level</label>
+            <select id="pupil-level" class="text-input">
+              <option value="high_school">High School (Classes 9–10)</option>
+              <option value="intermediate">Intermediate (Classes 11–12)</option>
+              <option value="undergraduate">Undergraduate / Degree</option>
+              <option value="postgraduate">Postgraduate / Research</option>
+              <option value="competitive_aspirant" selected>Competitive Exam Aspirant</option>
+            </select>
+
+            <label class="field-label" for="pupil-email" data-i18n="emailLabel">Email Address</label>
+            <input id="pupil-email" class="text-input" type="email" required maxlength="160" placeholder="pupil@school.edu" />
+            <p id="trusted-notice" class="trust-note hidden"></p>
+
+            <p id="auth-error" class="error-box hidden" role="alert"></p>
+            <button type="submit" id="request-otp-btn" class="primary-btn">
+              Send One-Time Passcode
+            </button>
+          </form>
+
+          <form id="otp-form" class="form-stack hidden">
+            <h2 class="section-title">Verify 6-Digit Passcode</h2>
+            <p id="otp-target-note" class="muted-copy"></p>
+            <div id="otp-receipt-box" class="otp-receipt hidden">
+              <span>Single-Use Dispatch Code</span>
+              <strong id="otp-preview-code" class="mono-num">------</strong>
+            </div>
+            <label class="field-label" for="otp-code">6-Digit Passcode</label>
+            <input id="otp-code" class="text-input mono-num otp-input" type="text" inputmode="numeric" maxlength="6" required placeholder="000000" />
+            <p id="otp-error" class="error-box hidden" role="alert"></p>
+            <div class="btn-row">
+              <button type="button" id="otp-back-btn" class="secondary-btn">Back</button>
+              <button type="submit" class="primary-btn flex-1">Verify &amp; Enter Portal</button>
+            </div>
+          </form>
+
+          <p class="privacy-note">
+            Session Isolation: Your account processes only your active study session. No API keys, admin data, or other users' details are exposed.
+          </p>
+        </section>
+      </main>
+    </div>
+
+    <!-- Main Portal Workspace -->
+    <div id="portal-shell" class="portal-shell hidden">
+      <header class="site-header">
+        <div class="header-inner">
+          <button type="button" id="brand-home" class="brand-wordmark">BCR Current Affairs</button>
+          <nav class="main-nav" aria-label="Primary sections">
+            <button type="button" class="nav-link active" data-tab="dispatch">Dispatch</button>
+            <button type="button" class="nav-link" data-tab="exams">Exam Prep</button>
+            <button type="button" class="nav-link" data-tab="infographics">Infographics</button>
+            <button type="button" class="nav-link" data-tab="glossary">Glossary</button>
+          </nav>
+          <button type="button" id="account-btn" class="account-btn">Pupil</button>
+        </div>
+      </header>
+
+      <div class="toolbar-strip">
+        <div class="toolbar-inner">
+          <input id="search-input" class="search-input" type="search" placeholder="Search news, exam tracks, or Telugu/English terms..." />
+          <div class="toolbar-controls">
+            <div class="segmented" role="group" aria-label="Language mode">
+              <button type="button" class="seg-btn" data-lang="en">EN</button>
+              <button type="button" class="seg-btn" data-lang="te">తెలుగు</button>
+              <button type="button" class="seg-btn active" data-lang="bilingual">Dual</button>
+            </div>
+            <div class="refresh-box">
+              <select id="refresh-select" aria-label="Refresh interval">
+                <option value="30">Auto 30s</option>
+                <option value="120" selected>Auto 2m</option>
+                <option value="300">Auto 5m</option>
+                <option value="0">Manual</option>
+              </select>
+              <span id="refresh-countdown" class="mono-num">120s</span>
+              <button type="button" id="refresh-now-btn" class="text-btn">Refresh</button>
+            </div>
+            <button type="button" id="theme-toggle" class="icon-btn">Theme</button>
+            <button type="button" id="logout-btn" class="secondary-btn">Log Out</button>
+          </div>
+        </div>
+      </div>
+
+      <main class="container">
+        <!-- Dispatch Tab -->
+        <section id="tab-dispatch" class="tab-panel">
+          <div class="ticker-bar">
+            <span class="ticker-label">Breaking</span>
+            <div class="ticker-viewport">
+              <div id="ticker-track" class="ticker-track"></div>
+            </div>
+            <button type="button" id="ticker-pause-btn" class="text-btn">Pause</button>
+          </div>
+
+          <div id="category-tabs" class="category-row"></div>
+          <div id="news-container" class="news-layout"></div>
+        </section>
+
+        <!-- Exam Prep Tab -->
+        <section id="tab-exams" class="tab-panel hidden">
+          <h2 class="page-heading">Competitive Exam Mock Tests &amp; Daily Alerts</h2>
+          <div id="exam-runner" class="hidden"></div>
+          <div id="exam-hub-grid" class="two-col-grid">
+            <div id="mock-tests-list" class="stack-gap"></div>
+            <div id="daily-quiz-box" class="editorial-card pad-lg"></div>
+          </div>
+          <div id="exam-updates-grid" class="three-col-grid"></div>
+        </section>
+
+        <!-- Infographics Tab -->
+        <section id="tab-infographics" class="tab-panel hidden">
+          <h2 class="page-heading">Interactive Policy &amp; Regional Infographics</h2>
+          <div id="infographics-list" class="stack-gap"></div>
+        </section>
+
+        <!-- Glossary Tab -->
+        <section id="tab-glossary" class="tab-panel hidden">
+          <h2 class="page-heading">Bilingual Academic &amp; Policy Glossary</h2>
+          <div id="glossary-grid" class="two-col-grid"></div>
+        </section>
+      </main>
+
+      <footer class="site-footer">
+        <div class="footer-inner">
+          <span>BCR Current Affairs · Bilingual English &amp; Telugu Pupil Portal</span>
+          <span id="last-updated-label" class="mono-num"></span>
+        </div>
+      </footer>
+    </div>
+
+    <!-- Article Reader Modal -->
+    <div id="article-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+      <div class="modal-card">
+        <div class="modal-head">
+          <span id="modal-meta" class="meta-text"></span>
+          <button type="button" id="modal-close-btn" class="text-btn">Close</button>
+        </div>
+        <div id="modal-body" class="modal-body"></div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,6 @@
+{
+  "name": "VidyaVarta — Bilingual Pupil News & Exam Portal",
+  "description": "Secure bilingual (English & Telugu) news, current affairs, competitive exam mock tests, infographics, and AI tutor portal for pupils.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

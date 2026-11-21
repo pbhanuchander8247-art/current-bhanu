@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      (function () {
+        try {
+          var own = Object.getOwnPropertyDescriptor(window, 'fetch');
+          var proto = Object.getPrototypeOf(window);
+          var protoDesc = !own && proto ? Object.getOwnPropertyDescriptor(proto, 'fetch') : null;
+          var desc = own || protoDesc;
+          if (desc && desc.get && !desc.set && (!own || own.configurable)) {
+            var baseGet = desc.get;
+            var customFetch = null;
+            Object.defineProperty(window, 'fetch', {
+              configurable: true,
+              enumerable: desc.enumerable !== false,
+              get: function () {
+                return customFetch || baseGet.call(window);
+              },
+              set: function (nextFetch) {
+                if (typeof nextFetch === 'function') {
+                  customFetch = nextFetch;
+                }
+              },
+            });
+          }
+          window.addEventListener(
+            'error',
+            function (event) {
+              if (
+                event &&
+                typeof event.filename === 'string' &&
+                event.filename.indexOf('chrome-extension://') === 0 &&
+                typeof event.message === 'string' &&
+                event.message.indexOf('fetch') !== -1
+              ) {
+                event.preventDefault();
+              }
+            },
+            true
+          );
+        } catch (e) {}
+      })();
+    </script>
+    <title>BCR Current Affairs — Bilingual Pupil News & Exam Portal</title>
+    <meta
+      name="description"
+      content="Secure bilingual (English & Telugu) news, current affairs, competitive exam mock tests, infographics, and AI tutor portal for pupils."
+    />
+    <meta property="og:title" content="BCR Current Affairs — Bilingual Pupil News & Exam Portal" />
+    <meta
+      property="og:description"
+      content="Secure bilingual (English & Telugu) news, current affairs, competitive exam mock tests, infographics, and AI tutor portal for pupils."
+    />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+Telugu:wght@400;500;600;700&family=Noto+Serif+Telugu:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="bg-[#FAF8F3] text-[#171513] dark:bg-[#0E1116] dark:text-[#F1F5F9] antialiased selection:bg-[#1D4ED8]/15 selection:text-[#1D4ED8] dark:selection:bg-[#60A5FA]/20 dark:selection:text-[#93C5FD]">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
